@@ -1,5 +1,8 @@
-# .travis.yml based on https://github.com/DRMacIver/hypothesis/blob/master/.travis.yml
-language: C
+# .travis.yml based on
+# https://github.com/DRMacIver/hypothesis/blob/master/.travis.yml
+# Setting the language to C overrides our CC environment variable
+# and disables ccache.
+language: python
 dist: xenial
 group: travis_latest
 
@@ -62,7 +65,7 @@ jobs:
 
 
 script:
-    - make test-$TRAVIS_PYTHON_VERSION
+    - time make test-$TRAVIS_PYTHON_VERSION
 
 
 notifications:

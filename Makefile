@@ -148,10 +148,10 @@ test-3.6:
 test-3.7:
 	PYTHON=python3.7 make develop leaktest cffibackendtest coverage_combine
 
-test-pypy:
+test-pypy2.7:
 	PYTHON=pypy2.7 make develop cffibackendtest
 
-test-pypy3:
+test-pypy3.6:
 	PYTHON=pypy3.6 make develop basictest
 
 test-py27-noembed:
