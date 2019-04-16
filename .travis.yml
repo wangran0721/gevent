@@ -2,6 +2,11 @@
 language: python
 dist: xenial
 group: travis_latest
+# Note that this list is again *manually* expanded
+# for the 'cache' stage. The benefit of doing this (instead of
+# only listing a single version here, or using a different 'language')
+# is that we get separate caches per version. This keeps them small,
+# and prevents stepping on each other when we change Python minor versions.
 python:
   - 2.7
   - 3.5
@@ -25,13 +30,24 @@ matrix:
 
 jobs:
   include:
-    - stage: cache
+    - &cache-stage
+      stage: cache
       script: ./scripts/install.sh $TRAVIS_PYTHON_VERSION
+    - <<: *cache-stage
+      python: 3.5
+    - <<: *cache-stage
+      python: 3.6
+    - <<: *cache-stage
+      python: 3.7
+    - <<: *cache-stage
+      python: pypy
+    - <<: *cache-stage
+      python: pypy3
+
     - stage: test
       env: TASK=test-py27-noembed
       script: make $TASK
-install:
-  - ./scripts/install.sh $TRAVIS_PYTHON_VERSION
+
 
 script:
     - make test-$TRAVIS_PYTHON_VERSION
