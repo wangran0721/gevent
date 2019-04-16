@@ -63,7 +63,7 @@ jobs:
       env: TRAVIS_PYTHON_VERSION=pypy3.6
 
     - stage: test
-      script: make $TASK
+      script: make test-py27-noembed
 
 install: true
 script:
