@@ -1,9 +1,14 @@
 # .travis.yml based on https://github.com/DRMacIver/hypothesis/blob/master/.travis.yml
-language: C
+language: python
 dist: xenial
 group: travis_latest
 python:
+  - 2.7
+  - 3.5
+  - 3.6
   - 3.7
+  - pypy
+  - pypy3
 
 env:
     global:
@@ -15,31 +20,22 @@ env:
         - CCACHE_NOHASHDIR=true
         - CFLAGS="-g -pipe"
 
-    matrix:
-      # These are ordered to get as much diversity in the
-      # first group of parallel runs (4) as possible
-      - TASK=test-py27-noembed
-      - TASK=test-py37
-      - TASK=test-py27
-      - TASK=test-pypy
-      - TASK=test-py36
-      - TASK=test-pypy3
-      - TASK=test-py35
-
 matrix:
   fast_finish: true
 
 jobs:
   include:
     - stage: cache
-      script: ./scripts/install_all.sh
+      script: ./scripts/install.sh $TRAVIS_PYTHON_VERSION
+    - stage: test
+      env: TASK=test-py27-noembed
+      script: make $TASK
+install:
+  - ./scripts/install.sh $TRAVIS_PYTHON_VERSION
 
 script:
-    - make $TASK
+    - make test-$TRAVIS_PYTHON_VERSION
 
-stages:
-  - cache
-  - test
 
 notifications:
   email: false

@@ -136,16 +136,16 @@ develop:
 	ccache -s
 	@${PYTHON} scripts/travis.py fold_end install
 
-test-py27:
+test-py2.7:
 	PYTHON=python2.7 make develop leaktest cffibackendtest coverage_combine
 
-test-py35:
+test-py3.5:
 	PYTHON=python3.5 make develop basictest
 
-test-py36:
+test-py3.6:
 	PYTHON=python3.6 make develop lint basictest
 
-test-py37:
+test-py3.7:
 	PYTHON=python3.7 make develop leaktest cffibackendtest coverage_combine
 
 test-pypy:
