@@ -35,8 +35,7 @@ doc:
 
 
 prospector:
-	which pylint
-	pylint --rcfile=.pylintrc gevent
+	${PYTHON} -m pylint --rcfile=.pylintrc gevent
 # debugging
 #	pylint --rcfile=.pylintrc --init-hook="import sys, code; sys.excepthook = lambda exc, exc_type, tb: print(tb.tb_next.tb_next.tb_next.tb_next.tb_next.tb_next.tb_next.tb_next.tb_next.tb_next.tb_frame.f_locals['self'])" gevent src/greentest/* || true
 # XXX: prospector is failing right now. I can't reproduce locally:

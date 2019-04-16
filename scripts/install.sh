@@ -77,10 +77,10 @@ for var in "$@"; do
     3.7)
       install 3.7.2 python3.7
       ;;
-    pypy)
+    pypy2.7)
       install pypy2.7-7.1.0 pypy2.7
       ;;
-    pypy3)
+    pypy3.6)
       install pypy3.6-7.1.0 pypy3.6
       ;;
   esac
