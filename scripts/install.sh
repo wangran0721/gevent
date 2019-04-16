@@ -54,7 +54,7 @@ install () {
  ls -l $SNAKEPIT
  # Overwrite an existing alias
  ln -sf $DESTINATION/bin/python $SNAKEPIT/$ALIAS
- $SNAKEPIT/$ALIAS
+ $SNAKEPIT/$ALIAS --version
  $SNAKEPIT/$ALIAS -m pip install --upgrade pip wheel virtualenv
 }
 
