@@ -50,7 +50,8 @@ jobs:
   include:
     - &cache-stage
       stage: cache
-      script: time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
+      install: time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
+      script: true
     - <<: *cache-stage
       env: TRAVIS_PYTHON_VERSION=3.5
     - <<: *cache-stage
