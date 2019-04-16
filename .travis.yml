@@ -50,7 +50,7 @@ jobs:
   include:
     - &cache-stage
       stage: cache
-      script: ./scripts/install.sh $TRAVIS_PYTHON_VERSION
+      script: time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
     - <<: *cache-stage
       env: TRAVIS_PYTHON_VERSION=3.5
     - <<: *cache-stage
@@ -63,7 +63,6 @@ jobs:
       env: TRAVIS_PYTHON_VERSION=pypy3.6
 
     - stage: test
-      env: TASK=test-py27-noembed
       script: make $TASK
 
 install: true

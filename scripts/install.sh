@@ -23,8 +23,13 @@ if [ ! -d "$PYENV/.git" ]; then
 else
   back=$PWD
   cd $PYENV
-  git fetch || echo "Fetch failed to complete. Ignoring"
-  git reset --hard origin/master
+  # We don't fetch or reset after the initial creation;
+  # doing so causes the Travis cache to need re-packed and uploaded,
+  # and it's pretty large.
+  # So if we need to incorporate changes from pyenv, either temporarily
+  # turn this back on, or remove the Travis caches.
+  # git fetch || echo "Fetch failed to complete. Ignoring"
+  # git reset --hard origin/master
   cd $back
 fi
 
