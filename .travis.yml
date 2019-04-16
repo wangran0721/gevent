@@ -1,5 +1,5 @@
 # .travis.yml based on https://github.com/DRMacIver/hypothesis/blob/master/.travis.yml
-language: python
+language: C
 dist: xenial
 group: travis_latest
 python:
@@ -29,8 +29,17 @@ env:
 matrix:
   fast_finish: true
 
+jobs:
+  include:
+    - stage: cache
+      script: ./scripts/install_all.sh
+
 script:
     - make $TASK
+
+stages:
+  - cache
+  - test
 
 notifications:
   email: false

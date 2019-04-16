@@ -8,43 +8,14 @@
 # that suffering in advance.
 
 set -e
-set -x
 
-# This is to guard against multiple builds in parallel. The various installers will tend
-# to stomp all over eachother if you do this and they haven't previously successfully
-# succeeded. We use a lock file to block progress so only one install runs at a time.
-# This script should be pretty fast once files are cached, so the lost of concurrency
-# is not a major problem.
-# This should be using the lockfile command, but that's not available on the
-# containerized travis and we can't install it without sudo.
-# Is is unclear if this is actually useful. I was seeing behaviour that suggested
-# concurrent runs of the installer, but I can't seem to find any evidence of this lock
-# ever not being acquired.
 
+# Where installations go
 BASE=${BUILD_RUNTIMES-$PWD/.runtimes}
+PYENV=$BASE/pyenv
 echo $BASE
 mkdir -p $BASE
 
-LOCKFILE="$BASE/.install-lockfile"
-while true; do
-  if mkdir $LOCKFILE 2>/dev/null; then
-    echo "Successfully acquired installer."
-    break
-  else
-    echo "Failed to acquire lock. Is another installer running? Waiting a bit."
-  fi
-
-  sleep $[ ( $RANDOM % 10)  + 1 ].$[ ( $RANDOM % 100) ]s
-
-  if (( $(date '+%s') > 300 + $(stat --format=%X $LOCKFILE) )); then
-    echo "We've waited long enough"
-    rm -rf $LOCKFILE
-  fi
-done
-trap "rm -rf $LOCKFILE" EXIT
-
-
-PYENV=$BASE/pyenv
 
 if [ ! -d "$PYENV/.git" ]; then
   rm -rf $PYENV
@@ -60,48 +31,53 @@ fi
 
 SNAKEPIT=$BASE/snakepit
 
+##
+# install(exact-version, alias)
+#
+# Produce a python executable at $SNAKEPIT/alias
+# having the exact version given as exact-version
+##
 install () {
 
   VERSION="$1"
   ALIAS="$2"
   mkdir -p $BASE/versions
-  SOURCE=$BASE/versions/$ALIAS
+  DESTINATION=$BASE/versions/$VERSION
 
-  if [ ! -e "$SOURCE" ]; then
+  if [ ! -e "$DESTINATION" ]; then
     mkdir -p $SNAKEPIT
     mkdir -p $BASE/versions
-    $BASE/pyenv/plugins/python-build/bin/python-build $VERSION $SOURCE
+    $BASE/pyenv/plugins/python-build/bin/python-build $VERSION $DESTINATION --keep
   fi
  rm -f $SNAKEPIT/$ALIAS
  mkdir -p $SNAKEPIT
  ls -l $SNAKEPIT
- ls -l $BASE/versions
- ls -l $SOURCE/
- ls -l $SOURCE/bin
- ln -s $SOURCE/bin/python $SNAKEPIT/$ALIAS
- $SOURCE/bin/python -m pip.__main__ install --upgrade pip wheel virtualenv
+ # Overwrite an existing alias
+ ln -sf $DESTINATION/bin/python $SNAKEPIT/$ALIAS
+ $SNAKEPIT/$ALIAS
+ $SNAKEPIT/$ALIAS -m pip install --upgrade pip wheel virtualenv
 }
 
 
 for var in "$@"; do
   case "${var}" in
     2.7)
-      install 2.7.16 python2.7.16
+      install 2.7.16 python2.7
       ;;
     3.5)
-      install 3.5.6 python3.5.6
+      install 3.5.6 python3.5
       ;;
     3.6)
-      install 3.6.8 python3.6.8
+      install 3.6.8 python3.6
       ;;
     3.7)
-      install 3.7.2 python3.7.2
+      install 3.7.2 python3.7
       ;;
-    pypy)
-      install pypy2.7-7.1.0 pypy710
+    pypy2.7)
+      install pypy2.7-7.1.0 pypy2.7
       ;;
-    pypy3)
-      install pypy3.6-7.1.0 pypy3.6_710
+    pypy3.6)
+      install pypy3.6-7.1.0 pypy3.6
       ;;
   esac
 done
