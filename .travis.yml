@@ -1,19 +1,7 @@
 # .travis.yml based on https://github.com/DRMacIver/hypothesis/blob/master/.travis.yml
-language: python
+language: C
 dist: xenial
 group: travis_latest
-# Note that this list is again *manually* expanded
-# for the 'cache' stage. The benefit of doing this (instead of
-# only listing a single version here, or using a different 'language')
-# is that we get separate caches per version. This keeps them small,
-# and prevents stepping on each other when we change Python minor versions.
-python:
-  - 2.7
-  - 3.5
-  - 3.6
-  - 3.7
-  - pypy
-  - pypy3
 
 env:
     global:
@@ -24,6 +12,26 @@ env:
         - CCACHE_SLOPPINESS=file_macro,time_macros,include_file_ctime,include_file_mtime
         - CCACHE_NOHASHDIR=true
         - CFLAGS="-g -pipe"
+
+    # Note that this list is again *manually* expanded
+    # for the 'cache' stage. The benefit of doing this (instead of
+    # only listing a single version here, or using a different 'language')
+    # is that we get separate caches per version. This keeps them small,
+    # and prevents stepping on each other when we change Python minor
+    # versions.
+
+    # We do it here, rather than with the python: keyword
+    # because the way travis handles pypy is pretty messed up.
+
+    # Recall that unless otherwise specified, jobs inherit
+    # the first entry in this list.
+    matrix:
+      - TRAVIS_PYTHON_VERSION=2.7
+      - TRAVIS_PYTHON_VERSION=3.5
+      - TRAVIS_PYTHON_VERSION=3.6
+      - TRAVIS_PYTHON_VERSION=3.7
+      - TRAVIS_PYTHON_VERSION=pypy2.7
+      - TRAVIS_PYTHON_VERSION=pypy3.6
 
 matrix:
   fast_finish: true
@@ -38,15 +46,15 @@ jobs:
       stage: cache
       script: ./scripts/install.sh $TRAVIS_PYTHON_VERSION
     - <<: *cache-stage
-      python: 3.5
+      env: TRAVIS_PYTHON_VERSION=3.5
     - <<: *cache-stage
-      python: 3.6
+      env: TRAVIS_PYTHON_VERSION=3.6
     - <<: *cache-stage
-      python: 3.7
+      env: TRAVIS_PYTHON_VERSION=3.7
     - <<: *cache-stage
-      python: pypy
+      env: TRAVIS_PYTHON_VERSION=pypy2.7
     - <<: *cache-stage
-      python: pypy3
+      env: TRAVIS_PYTHON_VERSION=pypy3.6
 
     - stage: test
       env: TASK=test-py27-noembed

@@ -35,7 +35,10 @@ SNAKEPIT=$BASE/snakepit
 # install(exact-version, alias)
 #
 # Produce a python executable at $SNAKEPIT/alias
-# having the exact version given as exact-version
+# having the exact version given as exact-version.
+#
+# Also produces a $SNAKEPIT/alias.d pointing to the root
+# of the python install.
 ##
 install () {
 
@@ -53,8 +56,9 @@ install () {
  mkdir -p $SNAKEPIT
  # Overwrite an existing alias
  ln -sf $DESTINATION/bin/python $SNAKEPIT/$ALIAS
+ ln -sf $DESTINATION $SNAKEPIT/$ALIAS.d
  $SNAKEPIT/$ALIAS --version
- $SNAKEPIT/$ALIAS -m pip install --upgrade --no-warn-script-location pip wheel virtualenv
+ PATH="$DESTINATION/bin/:$PATH" $SNAKEPIT/$ALIAS -m pip install --upgrade pip wheel virtualenv
  ls -l $SNAKEPIT
 }
 
