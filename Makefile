@@ -120,8 +120,10 @@ coverage_combine:
 
 
 develop:
-	@${PYTHON} scripts/travis.py fold_start install "Installing gevent"
 	@echo python is at `which $(PYTHON)`
+	ls -l ${BUILD_RUNTIMES}
+	ls -l ${BUILD_RUNTIMES}/snakepit
+	@${PYTHON} scripts/travis.py fold_start install "Installing gevent"
 # First install a newer pip so that it can use the wheel cache
 # (only needed until travis upgrades pip to 7.x; note that the 3.5
 # environment uses pip 7.1 by default)
