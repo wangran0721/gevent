@@ -28,6 +28,10 @@ env:
 matrix:
   fast_finish: true
 
+stages:
+  - cache
+  - test
+
 jobs:
   include:
     - &cache-stage
