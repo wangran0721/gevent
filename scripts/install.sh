@@ -37,18 +37,19 @@ fi
 SNAKEPIT=$BASE/snakepit
 
 ##
-# install(exact-version, alias)
+# install(exact-version, bin-alias, dir-alias)
 #
-# Produce a python executable at $SNAKEPIT/alias
+# Produce a python executable at $SNAKEPIT/bin-alias
 # having the exact version given as exact-version.
 #
-# Also produces a $SNAKEPIT/alias.d pointing to the root
+# Also produces a $SNAKEPIT/dir-alias/ pointing to the root
 # of the python install.
 ##
 install () {
 
   VERSION="$1"
   ALIAS="$2"
+  DIR_ALIAS="$3"
   mkdir -p $BASE/versions
   DESTINATION=$BASE/versions/$VERSION
 
@@ -61,7 +62,7 @@ install () {
  mkdir -p $SNAKEPIT
  # Overwrite an existing alias
  ln -sf $DESTINATION/bin/python $SNAKEPIT/$ALIAS
- ln -sf $DESTINATION $SNAKEPIT/$ALIAS.d
+ ln -sf $DESTINATION $SNAKEPIT/$DIR_ALIAS
  $SNAKEPIT/$ALIAS --version
  PATH="$DESTINATION/bin/:$PATH" $SNAKEPIT/$ALIAS -m pip install --upgrade pip wheel virtualenv
  ls -l $SNAKEPIT
@@ -71,22 +72,22 @@ install () {
 for var in "$@"; do
   case "${var}" in
     2.7)
-      install 2.7.16 python2.7
+      install 2.7.16 python2.7 2.7
       ;;
     3.5)
-      install 3.5.6 python3.5
+      install 3.5.6 python3.5 3.5
       ;;
     3.6)
-      install 3.6.8 python3.6
+      install 3.6.8 python3.6 3.6
       ;;
     3.7)
-      install 3.7.2 python3.7
+      install 3.7.2 python3.7 3.7
       ;;
     pypy2.7)
-      install pypy2.7-7.1.0 pypy2.7
+      install pypy2.7-7.1.0 pypy2.7 pypy2.7
       ;;
     pypy3.6)
-      install pypy3.6-7.1.0 pypy3.6
+      install pypy3.6-7.1.0 pypy3.6 pypy3.6
       ;;
   esac
 done

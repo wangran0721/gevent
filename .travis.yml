@@ -50,8 +50,15 @@ jobs:
   include:
     - &cache-stage
       stage: cache
-      install: time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
-      script: true
+      install:
+        # Install the Python runtime
+        - time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
+        # Install gevent, including building anything needed and
+        # getting the deps. This will have to be repeated for the
+        # subsequent stages, but much of it should be cached here.
+        - *install-gevent
+      script:
+        - ccache -s
     - <<: *cache-stage
       env: TRAVIS_PYTHON_VERSION=3.5
     - <<: *cache-stage
@@ -64,9 +71,23 @@ jobs:
       env: TRAVIS_PYTHON_VERSION=pypy3.6
 
     - stage: test
-      script: make test-py27-noembed
-
-install: true
+      script: make alltest cffibackendtest
+      install:
+        - cd deps/libev && ./configure --disable-dependency-tracking && make
+        - cd deps/c-ares && ./configure --disable-dependency-tracking && make
+        - cd deps/libuv && ./autogen.sh && ./configure --disable-static && make
+        - >
+          CPPFLAGS="-Ideps/libev -Ideps/c-ares -Ideps/libuv/include"
+          LDFLAGS="-Ldeps/libev/.libs -Ldeps/c-ares/.libs -Ldeps/libuv/.libs"
+          LD_LIBRARY_PATH="$(PWD)/deps/libev/.libs:$(PWD)/deps/c-ares/.libs:$(PWD)/deps/libuv/.libs"
+          EMBED=0
+          PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION/bin
+          python -m pip install --no-warn-script-location -r dev-requirements.txt
+install:
+  - &install-gevent >
+    GEVENTSETUP_EV_VERIFY=3
+    PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION/bin
+    python -m pip install --no-warn-script-location -r dev-requirements.txt
 script:
     - time make test-$TRAVIS_PYTHON_VERSION
 

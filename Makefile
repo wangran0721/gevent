@@ -129,22 +129,22 @@ develop:
 	@${PYTHON} scripts/travis.py fold_end install
 
 test-2.7:
-	PYTHON=python2.7 make develop leaktest cffibackendtest coverage_combine
+	PYTHON=python2.7 make leaktest cffibackendtest coverage_combine
 
 test-3.5:
-	PYTHON=python3.5 make develop basictest
+	PYTHON=python3.5 make basictest
 
 test-3.6:
-	PYTHON=python3.6 make develop lint basictest
+	PYTHON=python3.6 make lint basictest
 
 test-3.7:
-	PYTHON=python3.7 make develop leaktest cffibackendtest coverage_combine
+	PYTHON=python3.7 make leaktest cffibackendtest coverage_combine
 
 test-pypy2.7:
-	PYTHON=pypy2.7 make develop cffibackendtest
+	PYTHON=pypy2.7 make  cffibackendtest
 
 test-pypy3.6:
-	PYTHON=pypy3.6 make develop basictest
+	PYTHON=pypy3.6 make  basictest
 
 test-py27-noembed:
 	@python2.7 scripts/travis.py fold_start conf_libev "Configuring libev"
@@ -156,4 +156,4 @@ test-py27-noembed:
 	@python2.7 scripts/travis.py fold_start conf_libuv "Configuring libuv"
 	cd deps/libuv && ./autogen.sh && ./configure --disable-static && make
 	@python2.7 scripts/travis.py fold_end conf_libuv
-	CPPFLAGS="-Ideps/libev -Ideps/c-ares -Ideps/libuv/include" LDFLAGS="-Ldeps/libev/.libs -Ldeps/c-ares/.libs -Ldeps/libuv/.libs" LD_LIBRARY_PATH="$(PWD)/deps/libev/.libs:$(PWD)/deps/c-ares/.libs:$(PWD)/deps/libuv/.libs" EMBED=0 PYTHON=python2.7 make develop alltest cffibackendtest
+	CPPFLAGS="-Ideps/libev -Ideps/c-ares -Ideps/libuv/include" LDFLAGS="-Ldeps/libev/.libs -Ldeps/c-ares/.libs -Ldeps/libuv/.libs" LD_LIBRARY_PATH="$(PWD)/deps/libev/.libs:$(PWD)/deps/c-ares/.libs:$(PWD)/deps/libuv/.libs" EMBED=0 PYTHON=python2.7 make  alltest cffibackendtest
