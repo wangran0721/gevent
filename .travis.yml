@@ -17,6 +17,9 @@ env:
         - CCACHE_NOCPP2=true
         - CCACHE_SLOPPINESS=file_macro,time_macros,include_file_ctime,include_file_mtime
         - CCACHE_NOHASHDIR=true
+        # CCache stats are useful for debugging, but we see them producing
+        # surprising Travis cache writes that we don't expect.
+        - CCACHE_NOSTATS=true
         - BUILD_LIBS=$HOME/.libs
         - CFLAGS="-g -pipe"
         - CPPFLAGS="-I$BUILD_LIBS/include"
@@ -57,19 +60,6 @@ jobs:
       install:
         # Install the Python runtime
         - time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
-        # Install the C dependencies to a known location.
-        # This is used to test "no embed" cases, but also primes the
-        # CCache for when we do embed. We have to do this in each
-        # part of the matrix expansion to get it cached.
-        - pushd deps/libev && ./configure --prefix=$BUILD_LIBS && make install && popd
-        - pushd deps/c-ares && ./configure --prefix=$BUILD_LIBS && make install && popd
-        - pushd deps/libuv && ./autogen.sh && ./configure --disable-static --prefix=$BUILD_LIBS && make install && popd
-        - ls -l $BUILD_LIBS
-        # Install gevent, including building anything needed and
-        # getting the deps. This will have to be repeated for the
-        # subsequent stages, but much of it should be cached here.
-        # XXX: This syntax isn't working for some reason, nothing happens.
-        - *install-gevent
       script:
         - ccache -s
     - <<: *build-gevent
@@ -86,6 +76,15 @@ jobs:
     - stage: test
       script: make alltest cffibackendtest
       install:
+        # Install the C dependencies to a known location. This is used
+        # to test "no embed" cases. It might seem like it would prime
+        # the CCache for when we *do* embed if we did it as part of the generic build stage,
+        # but overall it just seems to slow things down. The Travis caching and CCache is not working as
+        # well as we would hope.
+        - pushd deps/libev && ./configure --prefix=$BUILD_LIBS && make install && popd
+        - pushd deps/c-ares && ./configure --prefix=$BUILD_LIBS && make install && popd
+        - pushd deps/libuv && ./autogen.sh && ./configure --disable-static --prefix=$BUILD_LIBS && make install && popd
+        - ls -l $BUILD_LIBS
         - >
           EMBED=0
           PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin:$PATH
