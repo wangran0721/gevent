@@ -61,6 +61,7 @@ jobs:
         # Install the Python runtime
         - time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
       script: true
+      before_script: true
     - <<: *build-gevent
       env: TRAVIS_PYTHON_VERSION=3.5
     - <<: *build-gevent
