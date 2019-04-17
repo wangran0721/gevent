@@ -146,7 +146,7 @@ script:
   # but we should run the tests too --- we spent all that time setting it up already.
   # We only need to do this on one version, and it should be Python 3, because
   # pylint has stopped updating for Python 2.
-  - if [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; then python -m pylint --rcfile=.pylintrc gevent
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; then python -m pylint --rcfile=.pylintrc gevent; fi
 
 # Submit coverage info
 after_success:
