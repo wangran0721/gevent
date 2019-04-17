@@ -24,7 +24,7 @@ env:
         - CFLAGS="-g -pipe"
         - CPPFLAGS="-I$BUILD_LIBS/include"
         - LDFLAGS="-L$BUILD_LIBS/lib"
-        - LD_LIBRARY_PATH="-L$BUILD_LIBS/lib"
+        - LD_LIBRARY_PATH="$BUILD_LIBS/lib"
 
     # Note that this list is again *manually* expanded
     # for the 'cache' stage. The benefit of doing this (instead of
@@ -84,7 +84,7 @@ jobs:
         - pushd deps/libev && ./configure --prefix=$BUILD_LIBS && make install && popd
         - pushd deps/c-ares && ./configure --prefix=$BUILD_LIBS && make install && popd
         - pushd deps/libuv && ./autogen.sh && ./configure --disable-static --prefix=$BUILD_LIBS && make install && popd
-        - ls -l $BUILD_LIBS
+        - ls -l $BUILD_LIBS $BUILD_LIBS/lib
         - >
           EMBED=0
           PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin:$PATH
