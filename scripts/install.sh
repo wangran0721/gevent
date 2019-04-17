@@ -69,7 +69,8 @@ install () {
     # usually handled automatically (obviously) because we installed
     # python. But if we make changes *just* to symlink locations above,
     # nothing happens. So for every symlink, write a file...with identical contents,
-    # so that we don't get *spurious* caching. TODO: check the contents before writing.
+    # so that we don't get *spurious* caching. (Travis doesn't check for mod times,
+    # just contents, so echoing each time doesn't cause it to re-cache.)
 
     # Overwrite an existing alias
     ln -sf $DESTINATION/bin/python $SNAKEPIT/$ALIAS

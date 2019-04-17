@@ -17,7 +17,11 @@ env:
         - CCACHE_NOCPP2=true
         - CCACHE_SLOPPINESS=file_macro,time_macros,include_file_ctime,include_file_mtime
         - CCACHE_NOHASHDIR=true
+        - BUILD_LIBS=$HOME/.libs
         - CFLAGS="-g -pipe"
+        - CPPFLAGS="-I$BUILD_LIBS/include"
+        - LDFLAGS="-L$BUILD_LIBS/lib"
+        - LD_LIBRARY_PATH="-L$BUILD_LIBS/lib"
 
     # Note that this list is again *manually* expanded
     # for the 'cache' stage. The benefit of doing this (instead of
@@ -43,16 +47,24 @@ matrix:
   fast_finish: true
 
 stages:
-  - cache
+  - build-gevent
   - test
 
 jobs:
   include:
-    - &cache-stage
-      stage: cache
+    - &build-gevent
+      stage: build-gevent
       install:
         # Install the Python runtime
         - time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
+        # Install the C dependencies to a known location.
+        # This is used to test "no embed" cases, but also primes the
+        # CCache for when we do embed. We have to do this in each
+        # part of the matrix expansion to get it cached.
+        - pushd deps/libev && ./configure --prefix=$BUILD_LIBS && make install && popd
+        - pushd deps/c-ares && ./configure --prefix=$BUILD_LIBS && make install && popd
+        - pushd deps/libuv && ./autogen.sh && ./configure --disable-static --prefix=$BUILD_LIBS && make install && popd
+        - ls -l $BUILD_LIBS
         # Install gevent, including building anything needed and
         # getting the deps. This will have to be repeated for the
         # subsequent stages, but much of it should be cached here.
@@ -60,27 +72,21 @@ jobs:
         - *install-gevent
       script:
         - ccache -s
-    - <<: *cache-stage
+    - <<: *build-gevent
       env: TRAVIS_PYTHON_VERSION=3.5
-    - <<: *cache-stage
+    - <<: *build-gevent
       env: TRAVIS_PYTHON_VERSION=3.6
-    - <<: *cache-stage
+    - <<: *build-gevent
       env: TRAVIS_PYTHON_VERSION=3.7
-    - <<: *cache-stage
+    - <<: *build-gevent
       env: TRAVIS_PYTHON_VERSION=pypy2.7
-    - <<: *cache-stage
+    - <<: *build-gevent
       env: TRAVIS_PYTHON_VERSION=pypy3.6
 
     - stage: test
       script: make alltest cffibackendtest
       install:
-        - pushd deps/libev && ./configure --disable-dependency-tracking && make && popd
-        - pushd deps/c-ares && ./configure --disable-dependency-tracking && make && popd
-        - pushd deps/libuv && ./autogen.sh && ./configure --disable-static && make && popd
         - >
-          CPPFLAGS="-Ideps/libev -Ideps/c-ares -Ideps/libuv/include"
-          LDFLAGS="-Ldeps/libev/.libs -Ldeps/c-ares/.libs -Ldeps/libuv/.libs"
-          LD_LIBRARY_PATH="$(PWD)/deps/libev/.libs:$(PWD)/deps/c-ares/.libs:$(PWD)/deps/libuv/.libs"
           EMBED=0
           PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin:$PATH
           python -m pip install --no-warn-script-location -r dev-requirements.txt
@@ -108,6 +114,7 @@ cache:
     - $HOME/.runtimes
     - $HOME/.wheelhouse
     - $HOME/.ccache
+    - $HOME/.libs
 
 before_cache:
     - rm -f $HOME/.cache/pip/log/debug.log
