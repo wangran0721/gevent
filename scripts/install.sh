@@ -8,6 +8,7 @@
 # that suffering in advance.
 
 set -e
+set -x
 
 
 # Where installations go
@@ -50,20 +51,27 @@ install () {
   VERSION="$1"
   ALIAS="$2"
   DIR_ALIAS="$3"
-  mkdir -p $BASE/versions
+
   DESTINATION=$BASE/versions/$VERSION
+
+  mkdir -p $BASE/versions
+  mkdir -p $SNAKEPIT
+
 
   if [ ! -e "$DESTINATION" ]; then
     mkdir -p $SNAKEPIT
     mkdir -p $BASE/versions
     $BASE/pyenv/plugins/python-build/bin/python-build $VERSION $DESTINATION --keep
   fi
- rm -f $SNAKEPIT/$ALIAS
- mkdir -p $SNAKEPIT
+
  # Overwrite an existing alias
+ rm -f $SNAKEPIT/$ALIAS
  ln -sf $DESTINATION/bin/python $SNAKEPIT/$ALIAS
+ rm -f $SNAKEPIT/$DIR_ALIAS
  ln -sf $DESTINATION $SNAKEPIT/$DIR_ALIAS
  $SNAKEPIT/$ALIAS --version
+ # Set the PATH to include the install's bin directory so pip
+ # doesn't nag.
  PATH="$DESTINATION/bin/:$PATH" $SNAKEPIT/$ALIAS -m pip install --upgrade pip wheel virtualenv
  ls -l $SNAKEPIT
 }
