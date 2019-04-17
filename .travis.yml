@@ -81,13 +81,13 @@ jobs:
           LDFLAGS="-Ldeps/libev/.libs -Ldeps/c-ares/.libs -Ldeps/libuv/.libs"
           LD_LIBRARY_PATH="$(PWD)/deps/libev/.libs:$(PWD)/deps/c-ares/.libs:$(PWD)/deps/libuv/.libs"
           EMBED=0
-          PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION/bin
+          PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin
           python -m pip install --no-warn-script-location -r dev-requirements.txt
 install:
   - &install-gevent >
-    GEVENTSETUP_EV_VERIFY=3
-    PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION/bin
-    python -m pip install --no-warn-script-location -r dev-requirements.txt
+      GEVENTSETUP_EV_VERIFY=3
+      PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin
+      python -m pip install --no-warn-script-location -r dev-requirements.txt
 script:
     - time make test-$TRAVIS_PYTHON_VERSION
 

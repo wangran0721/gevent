@@ -72,22 +72,22 @@ install () {
 for var in "$@"; do
   case "${var}" in
     2.7)
-      install 2.7.16 python2.7 2.7
+      install 2.7.16 python2.7 2.7.d
       ;;
     3.5)
-      install 3.5.6 python3.5 3.5
+      install 3.5.6 python3.5 3.5.d
       ;;
     3.6)
-      install 3.6.8 python3.6 3.6
+      install 3.6.8 python3.6 3.6.d
       ;;
     3.7)
-      install 3.7.2 python3.7 3.7
+      install 3.7.2 python3.7 3.7.d
       ;;
     pypy2.7)
-      install pypy2.7-7.1.0 pypy2.7 pypy2.7
+      install pypy2.7-7.1.0 pypy2.7 pypy2.7.d
       ;;
     pypy3.6)
-      install pypy3.6-7.1.0 pypy3.6 pypy3.6
+      install pypy3.6-7.1.0 pypy3.6 pypy3.6.d
       ;;
   esac
 done
