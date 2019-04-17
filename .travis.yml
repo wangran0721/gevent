@@ -60,8 +60,7 @@ jobs:
       install:
         # Install the Python runtime
         - time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
-      script:
-        - ccache -s
+      script: true
     - <<: *build-gevent
       env: TRAVIS_PYTHON_VERSION=3.5
     - <<: *build-gevent
@@ -73,8 +72,9 @@ jobs:
     - <<: *build-gevent
       env: TRAVIS_PYTHON_VERSION=pypy3.6
 
+    # This job is in addition to the jobs defined by the 'env' matrix;
+    # it shares the Travis cache with the first job defined there.
     - stage: test
-      script: make alltest cffibackendtest
       install:
         # Install the C dependencies to a known location. This is used
         # to test "no embed" cases. It might seem like it would prime
@@ -87,8 +87,19 @@ jobs:
         - ls -l $BUILD_LIBS $BUILD_LIBS/lib
         - >
           EMBED=0
-          PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin:$PATH
           python -m pip install --no-warn-script-location -r dev-requirements.txt
+
+before_install:
+  - export PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin:$PATH
+
+before_script:
+  # Show some details of interest
+  - >
+    python -c "import greenlet; print(greenlet, greenlet.__version__)"
+  - >
+    python -c "import gevent.core; print(gevent.core.loop)"
+  - >
+    python -c "import gevent.ares; print(gevent.ares)"
 
 install:
   - ls -l $BUILD_RUNTIMES/snakepit/
@@ -96,11 +107,47 @@ install:
   - ls -l $BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d
   - &install-gevent >
       GEVENTSETUP_EV_VERIFY=3
-      PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin:$PATH
       python -m pip install --no-warn-script-location -r dev-requirements.txt
 script:
-    - time make test-$TRAVIS_PYTHON_VERSION
+  # First, test all the defaults (backend is platform default libev,
+  # resolver is thread, fileobject is posix, modules cython compiled
+  # on CPython). Run all this with test coverage enabled, if possible
+  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then export GEVENTTEST_COVERAGE=1; fi
+  - python -m gevent.tests
+  # Next, test the two different resolvers
+  - GEVENT_RESOLVER=ares python -mgevent.tests --ignore tests_that_dont_use_resolver.txt
+  - GEVENT_RESOLVER=dnspython python -mgevent.tests --ignore tests_that_dont_use_resolver.txt
+  # Now, the non-default threaded file object.
+  # In the past, we included all test files that had a reference to 'subprocess'' somewhere in their
+  # text. The monkey-patched stdlib tests were specifically included here.
+  # However, we now always also test on AppVeyor (Windows) which only has GEVENT_FILE=thread,
+  # so we can save a lot of CI time by reducing the set and excluding the stdlib tests without
+  # losing any coverage.
+  - pushd src/gevent/tests && GEVENT_FILE=thread python -mgevent.tests test__*subprocess*.py && popd
 
+  # Now test the alternate backends, starting with libuv-cffi, which should be present everywhere
+  - GEVENT_LOOP=libuv python -mgevent.tests
+  # Next the libev-cffi backend, which is only needed on CPython (default on PyPy)
+  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; GEVENT_LOOP=libev-cffi python -mgevent.tests; fi
+  # No compiled cython modules on CPython, using the default backend
+  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; PURE_PYTHON=1 python -mgevent.tests; fi
+  # Stop asking for coverage
+  - unset GEVENTTEST_COVERAGE
+  # Run the leaktests; this seems to be extremely slow on Python 3.7
+  # XXX: Figure out why. Can we reproduce locally?
+  - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; GEVENTTEST_LEAKCHECK=1 python -m gevent.tests --ignore tests_that_dont_do_leakchecks.txt; fi
+
+  # lint the code. Do this last; we still want it to fail the build,
+  # but we should run the tests too --- we spent all that time setting it up already.
+  # We only need to do this on one version, and it should be Python 3, because
+  # pylint has stopped updating for Python 2.
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; python -m pylint --rcfile=.pylintrc gevent
+
+# Submit coverage info
+after_success:
+  - python -m coverage combine
+  - python -m coverage report -i
+  - python -m coveralls
 
 notifications:
   email: false
