@@ -60,19 +60,27 @@ install () {
     if [ ! -e "$DESTINATION" ]; then
         mkdir -p $SNAKEPIT
         mkdir -p $BASE/versions
-        $BASE/pyenv/plugins/python-build/bin/python-build $VERSION $DESTINATION --keep
+        $BASE/pyenv/plugins/python-build/bin/python-build $VERSION $DESTINATION
     fi
 
+    # Travis CI doesn't take symlink changes (or creation!) into
+    # account on its caching, So we need to write an actual file if we
+    # actually changed something. For python version upgrades, this is
+    # usually handled automatically (obviously) because we installed
+    # python. But if we make changes *just* to symlink locations above,
+    # nothing happens. So for every symlink, write a file...with identical contents,
+    # so that we don't get *spurious* caching. TODO: check the contents before writing.
+
     # Overwrite an existing alias
-    rm -f $SNAKEPIT/$ALIAS
     ln -sf $DESTINATION/bin/python $SNAKEPIT/$ALIAS
-    rm -f $SNAKEPIT/$DIR_ALIAS
     ln -sf $DESTINATION $SNAKEPIT/$DIR_ALIAS
+    echo $VERSION $ALIAS $DIR_ALIAS > $SNAKEPIT/$ALIAS.installed
     $SNAKEPIT/$ALIAS --version
     # Set the PATH to include the install's bin directory so pip
     # doesn't nag.
     PATH="$DESTINATION/bin/:$PATH" $SNAKEPIT/$ALIAS -m pip install --upgrade pip wheel virtualenv
     ls -l $SNAKEPIT
+
 }
 
 
