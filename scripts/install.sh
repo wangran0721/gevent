@@ -19,19 +19,19 @@ mkdir -p $BASE
 
 
 if [ ! -d "$PYENV/.git" ]; then
-  rm -rf $PYENV
-  git clone https://github.com/pyenv/pyenv.git $BASE/pyenv
+    rm -rf $PYENV
+    git clone https://github.com/pyenv/pyenv.git $BASE/pyenv
 else
-  back=$PWD
-  cd $PYENV
-  # We don't fetch or reset after the initial creation;
-  # doing so causes the Travis cache to need re-packed and uploaded,
-  # and it's pretty large.
-  # So if we need to incorporate changes from pyenv, either temporarily
-  # turn this back on, or remove the Travis caches.
-  # git fetch || echo "Fetch failed to complete. Ignoring"
-  # git reset --hard origin/master
-  cd $back
+    back=$PWD
+    cd $PYENV
+    # We don't fetch or reset after the initial creation;
+    # doing so causes the Travis cache to need re-packed and uploaded,
+    # and it's pretty large.
+    # So if we need to incorporate changes from pyenv, either temporarily
+    # turn this back on, or remove the Travis caches.
+    # git fetch || echo "Fetch failed to complete. Ignoring"
+    # git reset --hard origin/master
+    cd $back
 fi
 
 
@@ -48,54 +48,53 @@ SNAKEPIT=$BASE/snakepit
 ##
 install () {
 
-  VERSION="$1"
-  ALIAS="$2"
-  DIR_ALIAS="$3"
+    VERSION="$1"
+    ALIAS="$2"
+    DIR_ALIAS="$3"
 
-  DESTINATION=$BASE/versions/$VERSION
+    DESTINATION=$BASE/versions/$VERSION
 
-  mkdir -p $BASE/versions
-  mkdir -p $SNAKEPIT
-
-
-  if [ ! -e "$DESTINATION" ]; then
-    mkdir -p $SNAKEPIT
     mkdir -p $BASE/versions
-    $BASE/pyenv/plugins/python-build/bin/python-build $VERSION $DESTINATION --keep
-  fi
+    mkdir -p $SNAKEPIT
 
- # Overwrite an existing alias
- rm -f $SNAKEPIT/$ALIAS
- ln -sf $DESTINATION/bin/python $SNAKEPIT/$ALIAS
- rm -f $SNAKEPIT/$DIR_ALIAS
- ln -sf $DESTINATION $SNAKEPIT/$DIR_ALIAS
- $SNAKEPIT/$ALIAS --version
- # Set the PATH to include the install's bin directory so pip
- # doesn't nag.
- PATH="$DESTINATION/bin/:$PATH" $SNAKEPIT/$ALIAS -m pip install --upgrade pip wheel virtualenv
- ls -l $SNAKEPIT
+    if [ ! -e "$DESTINATION" ]; then
+        mkdir -p $SNAKEPIT
+        mkdir -p $BASE/versions
+        $BASE/pyenv/plugins/python-build/bin/python-build $VERSION $DESTINATION --keep
+    fi
+
+    # Overwrite an existing alias
+    rm -f $SNAKEPIT/$ALIAS
+    ln -sf $DESTINATION/bin/python $SNAKEPIT/$ALIAS
+    rm -f $SNAKEPIT/$DIR_ALIAS
+    ln -sf $DESTINATION $SNAKEPIT/$DIR_ALIAS
+    $SNAKEPIT/$ALIAS --version
+    # Set the PATH to include the install's bin directory so pip
+    # doesn't nag.
+    PATH="$DESTINATION/bin/:$PATH" $SNAKEPIT/$ALIAS -m pip install --upgrade pip wheel virtualenv
+    ls -l $SNAKEPIT
 }
 
 
 for var in "$@"; do
-  case "${var}" in
-    2.7)
-      install 2.7.16 python2.7 2.7.d
-      ;;
-    3.5)
-      install 3.5.6 python3.5 3.5.d
-      ;;
-    3.6)
-      install 3.6.8 python3.6 3.6.d
-      ;;
-    3.7)
-      install 3.7.2 python3.7 3.7.d
-      ;;
-    pypy2.7)
-      install pypy2.7-7.1.0 pypy2.7 pypy2.7.d
-      ;;
-    pypy3.6)
-      install pypy3.6-7.1.0 pypy3.6 pypy3.6.d
-      ;;
-  esac
+    case "${var}" in
+        2.7)
+            install 2.7.16 python2.7 2.7.d
+            ;;
+        3.5)
+            install 3.5.6 python3.5 3.5.d
+            ;;
+        3.6)
+            install 3.6.8 python3.6 3.6.d
+            ;;
+        3.7)
+            install 3.7.2 python3.7 3.7.d
+            ;;
+        pypy2.7)
+            install pypy2.7-7.1.0 pypy2.7 pypy2.7.d
+            ;;
+        pypy3.6)
+            install pypy3.6-7.1.0 pypy3.6 pypy3.6.d
+            ;;
+    esac
 done
