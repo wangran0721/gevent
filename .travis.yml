@@ -56,6 +56,7 @@ jobs:
         # Install gevent, including building anything needed and
         # getting the deps. This will have to be repeated for the
         # subsequent stages, but much of it should be cached here.
+        # XXX: This syntax isn't working for some reason, nothing happens.
         - *install-gevent
       script:
         - ccache -s
@@ -81,7 +82,7 @@ jobs:
           LDFLAGS="-Ldeps/libev/.libs -Ldeps/c-ares/.libs -Ldeps/libuv/.libs"
           LD_LIBRARY_PATH="$(PWD)/deps/libev/.libs:$(PWD)/deps/c-ares/.libs:$(PWD)/deps/libuv/.libs"
           EMBED=0
-          PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin
+          PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin:$PATH
           python -m pip install --no-warn-script-location -r dev-requirements.txt
 
 install:
@@ -90,7 +91,7 @@ install:
   - ls -l $BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d
   - &install-gevent >
       GEVENTSETUP_EV_VERIFY=3
-      PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin
+      PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin:$PATH
       python -m pip install --no-warn-script-location -r dev-requirements.txt
 script:
     - time make test-$TRAVIS_PYTHON_VERSION
