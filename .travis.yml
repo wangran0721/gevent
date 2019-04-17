@@ -73,9 +73,9 @@ jobs:
     - stage: test
       script: make alltest cffibackendtest
       install:
-        - cd deps/libev && ./configure --disable-dependency-tracking && make
-        - cd deps/c-ares && ./configure --disable-dependency-tracking && make
-        - cd deps/libuv && ./autogen.sh && ./configure --disable-static && make
+        - pushd deps/libev && ./configure --disable-dependency-tracking && make && popd
+        - pushd deps/c-ares && ./configure --disable-dependency-tracking && make && popd
+        - pushd deps/libuv && ./autogen.sh && ./configure --disable-static && make && popd
         - >
           CPPFLAGS="-Ideps/libev -Ideps/c-ares -Ideps/libuv/include"
           LDFLAGS="-Ldeps/libev/.libs -Ldeps/c-ares/.libs -Ldeps/libuv/.libs"
@@ -83,7 +83,11 @@ jobs:
           EMBED=0
           PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin
           python -m pip install --no-warn-script-location -r dev-requirements.txt
+
 install:
+  - ls -l $BUILD_RUNTIMES/snakepit/
+  - echo $BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d
+  - ls -l $BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d
   - &install-gevent >
       GEVENTSETUP_EV_VERIFY=3
       PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin
