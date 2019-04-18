@@ -85,8 +85,11 @@ jobs:
         # but overall it just seems to slow things down. The Travis caching and CCache is not working as
         # well as we would hope.
         - pushd deps/libev && ./configure --prefix=$BUILD_LIBS && make install && popd
-        - pushd deps/c-ares && ./configure --prefix=$BUILD_LIBS && make install && popd
-        - pushd deps/libuv && ./autogen.sh && ./configure --disable-static --prefix=$BUILD_LIBS && make install && popd
+        - pushd deps/c-ares && ./configure --prefix=$BUILD_LIBS && make -j4 install && popd
+        - pushd deps/libuv && ./autogen.sh && ./configure --disable-static --prefix=$BUILD_LIBS && make -j4 install && popd
+        # libev builds a manpage each time, and it includes today's date, so it frequently changes.
+        # delete to avoid repacking the archive
+        - rm -rf $BUILD_LIBS/share/man/
         - ls -l $BUILD_LIBS $BUILD_LIBS/lib
         - >
           EMBED=0
