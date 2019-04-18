@@ -439,19 +439,22 @@ def main():
 
     coverage = False
     if options.coverage or os.environ.get("GEVENTTEST_COVERAGE"):
-        coverage = True
-        os.environ['COVERAGE_PROCESS_START'] = os.path.abspath(".coveragerc")
-        if PYPY:
-            os.environ['COVERAGE_PROCESS_START'] = os.path.abspath(".coveragerc-pypy")
-        this_dir = os.path.dirname(__file__)
-        site_dir = os.path.join(this_dir, 'coveragesite')
-        site_dir = os.path.abspath(site_dir)
-        os.environ['PYTHONPATH'] = site_dir + os.pathsep + os.environ.get("PYTHONPATH", "")
-        # We change directory often, use an absolute path to keep all the
-        # coverage files (which will have distinct suffixes because of parallel=true in .coveragerc
-        # in this directory; makes them easier to combine and use with coverage report)
-        os.environ['COVERAGE_FILE'] = os.path.abspath(".") + os.sep + ".coverage"
-        print("Enabling coverage to", os.environ['COVERAGE_FILE'], "with site", site_dir)
+        if PYPY and RUNNING_ON_CI:
+            print("Ignoring coverage option on PyPy on CI; slow")
+        else:
+            coverage = True
+            os.environ['COVERAGE_PROCESS_START'] = os.path.abspath(".coveragerc")
+            if PYPY:
+                os.environ['COVERAGE_PROCESS_START'] = os.path.abspath(".coveragerc-pypy")
+            this_dir = os.path.dirname(__file__)
+            site_dir = os.path.join(this_dir, 'coveragesite')
+            site_dir = os.path.abspath(site_dir)
+            os.environ['PYTHONPATH'] = site_dir + os.pathsep + os.environ.get("PYTHONPATH", "")
+            # We change directory often, use an absolute path to keep all the
+            # coverage files (which will have distinct suffixes because of parallel=true in .coveragerc
+            # in this directory; makes them easier to combine and use with coverage report)
+            os.environ['COVERAGE_FILE'] = os.path.abspath(".") + os.sep + ".coverage"
+            print("Enabling coverage to", os.environ['COVERAGE_FILE'], "with site", site_dir)
 
     _setup_environ(debug=options.debug)
 

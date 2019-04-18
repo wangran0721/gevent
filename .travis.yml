@@ -115,21 +115,19 @@ script:
 
   # First, test all the defaults (backend is platform default libev,
   # resolver is thread, fileobject is posix, modules cython compiled
-  # on CPython). Run all this with test coverage enabled, if possible
-  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then export GEVENTTEST_COVERAGE=1; fi
+  # on CPython).
   - python -m gevent.tests
-  # Next, test the two different resolvers
+  # Next, test the two different resolvers.
   - GEVENT_RESOLVER=ares python -mgevent.tests --ignore tests_that_dont_use_resolver.txt
-  - GEVENT_RESOLVER=dnspython python -mgevent.tests --ignore tests_that_dont_use_resolver.txt
+  # Run dnspython with coverage enabled, it's implemented in python whereas ares is C.
+  - GEVENT_RESOLVER=dnspython python -mgevent.tests --coverage --ignore tests_that_dont_use_resolver.txt
 
   # Now test the alternate backends, starting with libuv-cffi, which should be present everywhere
-  - GEVENT_LOOP=libuv python -mgevent.tests
+  - GEVENT_LOOP=libuv python -mgevent.tests --coverage
   # Next the libev-cffi backend, which is only needed on CPython (default on PyPy)
-  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then GEVENT_LOOP=libev-cffi python -mgevent.tests; fi
-  # No compiled cython modules on CPython, using the default backend
-  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then PURE_PYTHON=1 python -mgevent.tests; fi
-  # Stop asking for coverage
-  - unset GEVENTTEST_COVERAGE
+  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then GEVENT_LOOP=libev-cffi python -mgevent.tests --coverage; fi
+  # No compiled cython modules on CPython, using the default backend. Get coverage here.
+  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then PURE_PYTHON=1 python -mgevent.tests --coverage; fi
 
   # Now, the non-default threaded file object.
   # In the past, we included all test files that had a reference to 'subprocess'' somewhere in their

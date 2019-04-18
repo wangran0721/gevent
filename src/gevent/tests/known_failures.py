@@ -233,6 +233,7 @@ if PYPY:
         'FLAKY test__backdoor.py',
     ]
 
+
     if RESOLVER_NOT_SYSTEM:
 
         FAILING_TESTS += [
@@ -243,7 +244,10 @@ if PYPY:
             # AssertionError: Lists differ:
             #     (10, 1, 6, '', ('2607:f8b0:4004:810::200e', 80, 0L, 0L))
             #     (10, 1, 6, '', ('2607:f8b0:4004:805::200e', 80, 0, 0))
-            'test__socket_dns.py',
+            #
+            # Somehow it seems most of these are fixed with PyPy3.6-7 under dnspython,
+            # (once we commented out TestHostname)?
+            'FLAKY test__socket_dns.py',
         ]
 
     if LIBUV:
@@ -260,10 +264,14 @@ if PYPY:
             # This fails to get the correct results, sometimes. I can't reproduce locally
             'FLAKY test__example_udp_server.py',
             'FLAKY test__example_udp_client.py',
+        ]
 
+        IGNORED_TESTS += [
             # PyPy 7.0 and 7.1 on Travis with Ubunto Xenial 16.04
             # can't allocate SSL Context objects, either in Python 2.7
             # or 3.6. There must be some library incompatibility.
+            # No point even running them.
+            # XXX: Remember to turn this back on.
             'test_ssl.py',
         ]
 
