@@ -62,6 +62,7 @@ jobs:
         - time ./scripts/install.sh $TRAVIS_PYTHON_VERSION
       script: true
       before_script: true
+      after_success: true
     - <<: *build-gevent
       env: TRAVIS_PYTHON_VERSION=3.5
     - <<: *build-gevent
@@ -75,6 +76,7 @@ jobs:
 
     # This job is in addition to the jobs defined by the 'env' matrix;
     # it shares the Travis cache with the first job defined there.
+    # It tests the no-embedded-library cases, and only those cases.
     - stage: test
       install:
         # Install the C dependencies to a known location. This is used
@@ -89,6 +91,12 @@ jobs:
         - >
           EMBED=0
           python -m pip install --no-warn-script-location -r dev-requirements.txt
+      script:
+       - *test-basic
+       - *test-ares
+       - *test-libuv
+       - *test-libev
+
 
 before_install:
   - export PATH=$BUILD_RUNTIMES/snakepit/$TRAVIS_PYTHON_VERSION.d/bin:$PATH
@@ -113,16 +121,16 @@ script:
   # First, test all the defaults (backend is platform default libev,
   # resolver is thread, fileobject is posix, modules cython compiled
   # on CPython).
-  - python -m gevent.tests --travis-fold basic
+  - &test-basic python -m gevent.tests --travis-fold basic
   # Next, test the two different resolvers.
-  - GEVENT_RESOLVER=ares python -mgevent.tests --travis-fold ares --ignore tests_that_dont_use_resolver.txt
+  - &test-ares GEVENT_RESOLVER=ares python -mgevent.tests --travis-fold ares --ignore tests_that_dont_use_resolver.txt
   # Run dnspython with coverage enabled, it's implemented in python whereas ares is C.
   - GEVENT_RESOLVER=dnspython python -mgevent.tests --travis-fold dnspython --coverage --ignore tests_that_dont_use_resolver.txt
 
   # Now test the alternate backends, starting with libuv-cffi, which should be present everywhere
-  - GEVENT_LOOP=libuv python -mgevent.tests --coverage --travis-fold libuv
+  - &test-libuv GEVENT_LOOP=libuv python -mgevent.tests --coverage --travis-fold libuv
   # Next the libev-cffi backend, which is only needed on CPython (default on PyPy)
-  - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then GEVENT_LOOP=libev-cffi python -mgevent.tests --coverage --travis-fold libev-cffi; fi
+  - &test-libev if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then GEVENT_LOOP=libev-cffi python -mgevent.tests --coverage --travis-fold libev-cffi; fi
   # No compiled cython modules on CPython, using the default backend. Get coverage here.
   - if [[ $TRAVIS_PYTHON_VERSION != pypy* ]]; then PURE_PYTHON=1 python -mgevent.tests --coverage --travis-fold pure; fi
 
