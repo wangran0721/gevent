@@ -150,6 +150,7 @@ jobs:
     # Test the c-ares resolver. It's implemented in C, so don't bother with coverage.
     # Also, we don't support it on PyPy for production, so don't bother to test PyPy.
     - &test-ares-jobs
+      stage: test
       script: GEVENT_RESOLVER=ares python -mgevent.tests --ignore tests_that_dont_use_resolver.txt
     - <<: *test-ares-jobs
       env: TRAVIS_PYTHON_VERSION=3.5
@@ -162,6 +163,7 @@ jobs:
     # PyPy is supported.
     - &test-dnspython-jobs
       script: GEVENT_RESOLVER=dnspython python -mgevent.tests --coverage --ignore tests_that_dont_use_resolver.txt
+      name: dnspython
     - <<: *test-dnspython-jobs
       env: TRAVIS_PYTHON_VERSION=3.5
     - <<: *test-dnspython-jobs
