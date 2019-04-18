@@ -107,7 +107,7 @@ jobs:
         # First, the build dependencies (see setup.cfg)
         # so that we don't have to use build isolation and can better use the cache
         - &build-gevent-deps pip install cffi cython greenlet
-        - GEVENTSETUP_EV_VERIFY=3 pip install .[test,events,dnspython]
+        - GEVENTSETUP_EV_VERIFY=3 pip install --no-build-isolation .[test,events,dnspython]
       script: ccache -s
       before_script: true
       after_success: true
@@ -139,7 +139,7 @@ jobs:
         # delete to avoid repacking the archive
         - rm -rf $BUILD_LIBS/share/man/
         - ls -l $BUILD_LIBS $BUILD_LIBS/lib
-        - EMBED=0 pip install .[test,events,dnspython]
+        - EMBED=0 pip install --no-build-isolation .[test,events,dnspython]
 
     # Test the c-ares resolver. It's implemented in C, so don't bother with coverage.
     # Also, we don't support it on PyPy for production, so don't bother to test PyPy.
